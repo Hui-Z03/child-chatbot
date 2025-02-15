@@ -1,13 +1,21 @@
-# .pre-commit-config.yaml
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
-  hooks:
-    - id: trailing-whitespace
-    - id: end-of-file-fixer
-    - id: check-yaml
-    - id: debug-statements
-- repo: https://github.com/psf/black
-  rev: 23.3.0
-  hooks:
-    - id: black
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace  # 检查尾随空格
+      - id: end-of-file-fixer     # 确保文件以换行符结束
+      - id: check-yaml            # 检查YAML文件格式
+      - id: check-added-large-files  # 防止提交大文件
+      - id: debug-statements      # 检查调试语句（如print）
+      - id: check-ast             # 检查Python语法
+      - id: detect-private-key    # 防止提交私钥文件
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black  # 自动格式化Python代码
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8  # Python代码风格检查
