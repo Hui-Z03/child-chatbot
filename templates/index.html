@@ -59,7 +59,14 @@
             });
             const data = await response.json();
             resultText.innerText += `\nAI回复：${data.reply}`;
-            playAudio(data.reply); // 播放语音
+            speak(data.reply); // 读出AI回复
+        }
+
+        // 使用Web Speech API读出文本
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN"; // 设置语言为中文
+            window.speechSynthesis.speak(utterance);
         }
 
         // 初始化
