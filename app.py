@@ -24,16 +24,18 @@ client = AzureOpenAI(
     api_version="2024-05-01-preview",
 )
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
 @app.route("/get-azure-config")
 def get_azure_config():
-    return jsonify({
-        "key": AZURE_CONFIG["speech_key"],
-        "region": AZURE_CONFIG["speech_region"]
-    })
+    return jsonify(
+        {"key": AZURE_CONFIG["speech_key"], "region": AZURE_CONFIG["speech_region"]}
+    )
+
 
 @app.route("/speech-to-text", methods=["POST"])
 def speech_to_text():
@@ -42,6 +44,7 @@ def speech_to_text():
     # 这里需要根据Azure Speech API文档进行实现
     # 返回识别结果
     return jsonify({"text": "recognized text from speech"})
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -54,19 +57,11 @@ def chat():
                 "content": [
                     {
                         "type": "text",
-                        "text": "你是一位耐心、热情的中文老师。你的任务是和孩子进行互动对话，帮助他练习中文。\n注意：\n1. 使用简单词汇和句子，不要用长句。\n2. 用温柔、鼓励的语气。\n3. 询问孩子的名字、兴趣爱好，让对话显得自然亲切。"
+                        "text": "你是一位耐心、热情的中文老师。你的任务是和孩子进行互动对话，帮助他练习中文。\n注意：\n1. 使用简单词汇和句子，不要用长句。\n2. 用温柔、鼓励的语气。\n3. 询问孩子的名字、兴趣爱好，让对话显得自然亲切。",
                     }
-                ]
+                ],
             },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": user_input
-                    }
-                ]
-            }
+            {"role": "user", "content": [{"type": "text", "text": user_input}]},
         ]
 
         completion = client.chat.completions.create(
@@ -78,7 +73,7 @@ def chat():
             frequency_penalty=0.1,
             presence_penalty=0.1,
             stop=None,
-            stream=False
+            stream=False,
         )
 
         print(f"Completion: {completion}")  # 添加调试信息
@@ -88,6 +83,7 @@ def chat():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
