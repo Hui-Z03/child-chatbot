@@ -4,11 +4,39 @@
     <title>Child Chatbot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        p {
+            text-align: center;
+            max-width: 600px;
+        }
+    </style>
 </head>
 <body>
     <h1>小朋友，跟我练习普通话吧！</h1>
-    <button id="startBtn">开始说话</button>
-    <button id="stopBtn" disabled>结束说话</button>
+    <div class="buttons">
+        <button id="startBtn">开始说话</button>
+        <button id="stopBtn" disabled>结束说话</button>
+    </div>
     <p id="status">点击“开始说话”按钮开始录音，点击“结束说话”按钮结束录音</p>
     <p id="result"></p>
 
@@ -19,64 +47,57 @@
         const statusText = document.getElementById("status");
         const resultText = document.getElementById("result");
 
-        // 从后端获取Azure配置
+        // Fetch Azure configuration from the backend
         async function getAzureConfig() {
             const response = await fetch("/get-azure-config");
             return await response.json();
         }
 
-        // 初始化语音识别
+        // Initialize the speech recognizer
         async function initializeRecognizer() {
             const config = await getAzureConfig();
             const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(config.key, config.region);
-            speechConfig.speechRecognitionLanguage = "zh-CN"; // 设置语言为中文
+            speechConfig.speechRecognitionLanguage = "zh-CN"; // Set language to Chinese
             recognizer = new SpeechSDK.SpeechRecognizer(speechConfig);
-            console.log("Recognizer initialized");
 
-            // 设置事件处理程序
+            // Set event handlers
             recognizer.recognized = (s, e) => {
                 if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
                     resultText.innerText = `你说：${e.result.text}`;
-                    console.log(`Recognized: ${e.result.text}`);
-                    sendToBackend(e.result.text); // 发送到后端
+                    sendToBackend(e.result.text); // Send recognized text to the backend
                 } else {
-                    statusText.innerText = "识别失败，请重试";
-                    console.log("Recognition failed");
+                    statusText.innerText = "识别失败，请重试"; // Recognition failed, please try again
                 }
             };
 
             recognizer.canceled = (s, e) => {
-                statusText.innerText = `错误：${e.errorDetails}`;
-                console.error(`Recognition canceled: ${e.errorDetails}`);
+                statusText.innerText = `错误：${e.errorDetails}`; // Error details
             };
         }
 
-        // 开始录音
+        // Start listening
         function startListening() {
-            statusText.innerText = "正在聆听...";
-            console.log("Listening started");
+            statusText.innerText = "正在聆听..."; // Listening...
             recognizer.startContinuousRecognitionAsync();
             startBtn.disabled = true;
             stopBtn.disabled = false;
         }
 
-        // 停止录音
+        // Stop listening
         function stopListening() {
             recognizer.stopContinuousRecognitionAsync(
                 () => {
-                    console.log("Recognition stopped");
                     startBtn.disabled = false;
                     stopBtn.disabled = true;
                 },
                 error => {
-                    console.error(`Recognition stop error: ${error}`);
+                    console.error(`Recognition stop error: ${error}`); // Recognition stop error
                 }
             );
         }
 
-        // 发送语音文本到后端
+        // Send recognized text to the backend
         async function sendToBackend(text) {
-            console.log(`Sending to backend: ${text}`);
             try {
                 const response = await fetch("/chat", {
                     method: "POST",
@@ -84,27 +105,24 @@
                     body: JSON.stringify({ text: text })
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`); // HTTP error
                 }
                 const data = await response.json();
-                resultText.innerText += `\nAI回复：${data.reply}`;
-                console.log(`AI reply: ${data.reply}`);
-                speak(data.reply); // 读出AI回复
+                resultText.innerText += `\nAI回复：${data.reply}`; // AI reply
+                speak(data.reply); // Speak out AI reply
             } catch (error) {
-                console.error(`Error: ${error}`);
-                statusText.innerText = `错误：${error.message}`;
+                statusText.innerText = `错误：${error.message}`; // Error message
             }
         }
 
-        // 使用Web Speech API读出文本
+        // Use Web Speech API to speak out text
         function speak(text) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "zh-CN"; // 设置语言为中文
+            utterance.lang = "zh-CN"; // Set language to Chinese
             window.speechSynthesis.speak(utterance);
-            console.log(`Speaking: ${text}`);
         }
 
-        // 初始化
+        // Initialize the recognizer and set up event listeners
         (async function () {
             await initializeRecognizer();
             startBtn.addEventListener("click", startListening);
