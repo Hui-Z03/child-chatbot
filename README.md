@@ -23,6 +23,7 @@ This project supports **ChatGPT** as AI conversation engines.
 - **CI/CD**: GitHub Actions
 
 - **tools**: Agent builder for non-coders; Copilot Studio for coders; Copilt Studio + Visual Studio/GitHub for developers
+- **Azure AI Agent Service** for single agent; **Semantic Kernel** for multi-agent
   
 **Insights and Considerations from an Pilot Study Project:**
 
