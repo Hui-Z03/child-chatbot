@@ -22,6 +22,8 @@ This project supports **ChatGPT** as AI conversation engines.
 - **容器化 | Containerization**: Docker
 - **CI/CD**: GitHub Actions
 
+- **tools**: Agent builder for non-coders; Copilot Studio for coders; Copilt Studio + Visual Studio/GitHub for developers
+  
 **Insights and Considerations from an Pilot Study Project:**
 
 The deployment of Azure's OpenAI service has transitioned to "Azure AI Foundry."  Create resources in the Azure portal first and then deploy specific models through Azure AI Foundry.
