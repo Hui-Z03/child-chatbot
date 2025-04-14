@@ -34,3 +34,6 @@ Limited Quotas: Quotas are limited and vary by region. It's essential to identif
 Prompt Token Consumption: Prompts are counted in each interaction, leading to rapid token consumption. Design prompts carefully. (Most S0-tier models have only 1k TPM.)
 
 The Azure user interface updates rapidly, especially concerning AI deployments, which often change. There are also numerous restrictions on tokens and quotas. As a next step, consider exploring open-source models like DeepSeek, which offer more convenient deployment for development purposes and can help reduce costs.
+
+- 14/04/2025
+- 参加 MS AI Agent Hackathon 2025; LLM改用github marketplace
