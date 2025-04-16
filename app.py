@@ -1,81 +1,77 @@
 from flask import Flask, render_template, jsonify, request
 from dotenv import load_dotenv
 import os
-from openai import AzureOpenAI
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.core.credentials import AzureKeyCredential
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 
-# Azure configuration settings
+# Azure Speech configuration
 AZURE_CONFIG = {
     "speech_key": os.getenv("AZURE_SPEECH_KEY"),
     "speech_region": os.getenv("AZURE_SPEECH_REGION"),
-    "openai_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
-    "openai_key": os.getenv("AZURE_OPENAI_KEY"),
-    "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
 }
 
-# Initialize Azure OpenAI client
-client = AzureOpenAI(
-    azure_endpoint=AZURE_CONFIG["openai_endpoint"],
-    api_key=AZURE_CONFIG["openai_key"],
-    api_version="2024-05-01-preview",
+# GitHub GPT-4.1 Nano configuration
+GITHUB_CONFIG = {
+    "endpoint": "https://models.github.ai/inference",
+    "model": "openai/gpt-4.1-nano",
+    "token": os.getenv("GITHUB_TOKEN"),
+}
+
+# Initialize GitHub ChatCompletionsClient
+client = ChatCompletionsClient(
+    endpoint=GITHUB_CONFIG["endpoint"],
+    credential=AzureKeyCredential(GITHUB_CONFIG["token"]),
 )
 
-# Route for the home page
+# Home page route
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# Route to get Azure configuration
+# Route to get Azure Speech configuration
 @app.route("/get-azure-config")
 def get_azure_config():
     return jsonify(
         {"key": AZURE_CONFIG["speech_key"], "region": AZURE_CONFIG["speech_region"]}
     )
 
-# Route for speech-to-text conversion
+# Route for speech-to-text conversion using Azure Speech
 @app.route("/speech-to-text", methods=["POST"])
 def speech_to_text():
     audio_data = request.files["audio"].read()
-    # Call Azure Speech service for speech recognition
-    # Implement according to Azure Speech API documentation
+    # TODO: Implement Azure Speech API call for speech recognition
     return jsonify({"text": "recognized text from speech"})
 
-# Route for chat interaction
+# Route for chat interaction using GitHub GPT-4.1 Nano
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
         user_input = request.json.get("text")
         chat_prompt = [
-            {
-                "role": "system",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": "你是6岁孩子的中文老师。",
-                    }
-                ],
-            },
-            {"role": "user", "content": [{"type": "text", "text": user_input}]},
+            SystemMessage("你是幼儿园的中文老师，陪我练习中文口语。"),
+            UserMessage(user_input),
         ]
 
-        # Generate chat completion using Azure OpenAI
-        completion = client.chat.completions.create(
-            model=AZURE_CONFIG["deployment_name"],
+        # Call GitHub GPT-4.1 Nano API for chat completion
+        response = client.complete(
             messages=chat_prompt,
-            max_tokens=500,
             temperature=0.5,
             top_p=0.9,
-            frequency_penalty=0.1,
-            presence_penalty=0.1,
+            model=GITHUB_CONFIG["model"],
         )
 
-        response_text = completion.choices[0].message.content
+        # Extract the reply from the response
+        response_text = response.choices[0].message.content
         return jsonify({"reply": response_text})
     except Exception as e:
+        # Log the error to the console for debugging
+        print(f"Error in /chat route: {e}")
         return jsonify({"error": str(e)}), 500
 
 # Run the Flask app

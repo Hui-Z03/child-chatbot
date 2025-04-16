@@ -34,10 +34,10 @@
 <body>
     <h1>小朋友，跟我练习普通话吧！</h1>
     <div class="buttons">
-        <button id="startBtn">开始说话</button>
-        <button id="stopBtn" disabled>结束说话</button>
+        <button id="startBtn">开始对话</button>
+        <button id="stopBtn" disabled>结束对话</button>
     </div>
-    <p id="status">点击“开始说话”按钮开始录音，点击“结束说话”按钮结束录音</p>
+    <p id="status">点击“开始对话”按钮开始，点击“结束对话”按钮结束练习</p>
     <p id="result"></p>
 
     <script>
@@ -117,6 +117,8 @@
 
         // Use Web Speech API to speak out text
         function speak(text) {
+            window.speechSynthesis.cancel(); // Cancel any ongoing speech
+
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = "zh-CN"; // Set language to Chinese
             window.speechSynthesis.speak(utterance);
