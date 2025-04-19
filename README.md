@@ -12,7 +12,9 @@ This is an AI-powered Mandarin speaking practice tool designed for 6-year-old ch
 This project supports **ChatGPT** as AI conversation engines.
 
 - **ChatGPT**: Powered by OpenAI gpt-4o-mini (version:2024-07-18), with strong natural language understanding.
-- **1k TPM** 
+- **1k TPM**
+
+- test link: [child-chatbot](child-chatbot-aneahubvf9bjgwh3.australiasoutheast-01.azurewebsites.net)
 
 
 ## 技术栈 | Tech Stack
