@@ -58,7 +58,7 @@ This will open the chatbot interface, where children can begin speaking Mandarin
 
 ## **Illustrations** of Use Example
 
-[![Screenshot-2025-04-20-213329.png](https://i.postimg.cc/W3ZFLqb2/Screenshot-2025-04-20-213329.png)](https://postimg.cc/r08F5mrb)
+[![Screenshot-2025-04-21-204000.png](https://i.postimg.cc/ZKW7HXB6/Screenshot-2025-04-21-204000.png)](https://postimg.cc/F7QVsWxK)
 
 
 
