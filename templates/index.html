@@ -1,135 +1,177 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Child Chatbot</title>
+    <title>Little Mandarin Buddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
     <style>
-        body {
+        .header-section {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
+            gap: 20px;
         }
-        h1 {
-            text-align: center;
-        }
-        .buttons {
-            margin-top: 20px;
-        }
-        button {
-            margin: 0 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        p {
-            text-align: center;
-            max-width: 600px;
+        
+        .animation-player {
+            width: 100px;
+            height: 100px;
         }
     </style>
 </head>
 <body>
-    <h1>小朋友，跟我练习普通话吧！</h1>
-    <div class="buttons">
-        <button id="startBtn">开始对话</button>
-        <button id="stopBtn" disabled>结束对话</button>
-    </div>
-    <p id="status">点击“开始对话”按钮开始，点击“结束对话”按钮结束练习</p>
-    <p id="result"></p>
+    <div class="container">
+        <!-- Decorative elements -->
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+        
+        <!-- Header section with animation positioned to the left of title -->
+        <div class="header-section">
+            <!-- Lottie animation -->
+            <div class="header-top">
+                <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+                <dotlottie-player
+                    src="https://lottie.host/9068bab3-a2bc-4049-9b7d-30ca8ec6f1e0/HhsL2AhlIa.lottie"
+                    background="transparent"
+                    speed="1"
+                    class="animation-player"
+                    loop
+                    autoplay>
+                </dotlottie-player>
+            
+                <h1>你好，小朋友！来跟我练习说中文吧!</h1>
+            </div>
+                <h3>Hi there, little buddy! Come practice Chinese with me!</h3>
+        </div>
+        
+        <div class="status-box">
+            <div class="status-content">
+                <p id="status">
+                    Tap "Start" to talk to your buddy! 🗣️🟢<br>
+                    Say something in Chinese and listen to your buddy's response. 👥👂<br>
+                    Keep chatting until you want to take a break and hit "Stop"! ☕🔴
+                </p>
+                <img src="{{ url_for('static', filename='images/instruction_bot.png') }}" alt="instruction_bot" class="status-right-image">
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="startBtn">开始 Start 🟢</button>
+            <button id="stopBtn" disabled>结束 Stop 🔴</button>
+        </div>
+        
+        <div class="conversation-container">
+            <img src="{{ url_for('static', filename='images/conversation_bot_left.png') }}" alt="left-bot" class="left-bot flashing">
+            
+            <div class="conversation-box">
+              <p id="result">This is a conversation box to display our chat messages.</p>
+            </div>
+            
+            <img src="{{ url_for('static', filename='images/conversation_bot_right.png') }}" alt="right-bot" class="right-bot flashing">
+          </div>
+          
+        
+        <div class="footer">
+            <a href="http://www.freepik.com" target="_blank" rel="noopener noreferrer">
+                Images designed by pch.vector / Freepik
+            </a>
+        </div>
 
-    <script>
-        let recognizer;
-        const startBtn = document.getElementById("startBtn");
-        const stopBtn = document.getElementById("stopBtn");
-        const statusText = document.getElementById("status");
-        const resultText = document.getElementById("result");
-
-        // Fetch Azure configuration from the backend
-        async function getAzureConfig() {
-            const response = await fetch("/get-azure-config");
-            return await response.json();
-        }
-
-        // Initialize the speech recognizer
-        async function initializeRecognizer() {
-            const config = await getAzureConfig();
-            const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(config.key, config.region);
-            speechConfig.speechRecognitionLanguage = "zh-CN"; // Set language to Chinese
-            recognizer = new SpeechSDK.SpeechRecognizer(speechConfig);
-
-            // Set event handlers
-            recognizer.recognized = (s, e) => {
-                if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                    resultText.innerText = `你说：${e.result.text}`;
-                    sendToBackend(e.result.text); // Send recognized text to the backend
-                } else {
-                    statusText.innerText = "识别失败，请重试"; // Recognition failed, please try again
-                }
-            };
-
-            recognizer.canceled = (s, e) => {
-                statusText.innerText = `错误：${e.errorDetails}`; // Error details
-            };
-        }
-
-        // Start listening
-        function startListening() {
-            statusText.innerText = "正在聆听..."; // Listening...
-            recognizer.startContinuousRecognitionAsync();
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-        }
-
-        // Stop listening
-        function stopListening() {
-            recognizer.stopContinuousRecognitionAsync(
-                () => {
-                    startBtn.disabled = false;
-                    stopBtn.disabled = true;
-                },
-                error => {
-                    console.error(`Recognition stop error: ${error}`); // Recognition stop error
-                }
-            );
-        }
-
-        // Send recognized text to the backend
-        async function sendToBackend(text) {
-            try {
-                const response = await fetch("/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: text })
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`); // HTTP error
-                }
-                const data = await response.json();
-                resultText.innerText += `\nAI回复：${data.reply}`; // AI reply
-                speak(data.reply); // Speak out AI reply
-            } catch (error) {
-                statusText.innerText = `错误：${error.message}`; // Error message
+        <script>
+            let recognizer;
+            const startBtn = document.getElementById("startBtn");
+            const stopBtn = document.getElementById("stopBtn");
+            const statusText = document.getElementById("status");
+            const resultText = document.getElementById("result");
+    
+            // Fetch Azure configuration from the backend
+            async function getAzureConfig() {
+                const response = await fetch("/get-azure-config");
+                return await response.json();
             }
-        }
+    
+            // Initialize the speech recognizer
+            async function initializeRecognizer() {
+                const config = await getAzureConfig();
+                const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(config.key, config.region);
+                speechConfig.speechRecognitionLanguage = "zh-CN"; // Set language to Chinese
+                recognizer = new SpeechSDK.SpeechRecognizer(speechConfig);
+    
+                // Set event handlers
+                recognizer.recognized = (s, e) => {
+                    if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+                        resultText.innerText = `你说 You said：${e.result.text}`;
+                        sendToBackend(e.result.text); // Send recognized text to the backend
+                    } else {
+                        statusText.innerText = "识别失败，请重试 Recognition failed, please try again"; // Recognition failed, please try again
+                    }
+                };
+    
+                recognizer.canceled = (s, e) => {
+                    statusText.innerText = `错误 Error：${e.errorDetails}`; // Error details
+                };
+            }
+    
+            // Start listening
+            function startListening() {
+                statusText.innerText = "正在聆听...I'm listening..."; // Listening...
+                recognizer.startContinuousRecognitionAsync();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            }
+    
+            // Stop listening
+            function stopListening() {
+                recognizer.stopContinuousRecognitionAsync(
+                    () => {
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    },
+                    error => {
+                        console.error(`Recognition stop error: ${error}`); // Recognition stop error
+                    }
+                );
+            }
+    
+            // Send recognized text to the backend
+            async function sendToBackend(text) {
+                try {
+                    const response = await fetch("/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ text: text })
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`); // HTTP error
+                    }
+                    const data = await response.json();
+                    resultText.innerText += `\n话伴回复 Buddy said：${data.reply}`; // AI reply
+                    speak(data.reply); // Speak out AI reply
+                } catch (error) {
+                    statusText.innerText = `错误 Error：${error.message}`; // Error message
+                }
+            }
+    
+            // Use Web Speech API to speak out text
+            function speak(text) {
+                window.speechSynthesis.cancel(); // Cancel any ongoing speech
+    
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = "zh-CN"; // Set language to Chinese
+                window.speechSynthesis.speak(utterance);
+            }
+    
+            // Initialize the recognizer and set up event listeners
+            (async function () {
+                await initializeRecognizer();
+                startBtn.addEventListener("click", startListening);
+                stopBtn.addEventListener("click", stopListening);
+            })();
+        </script>
 
-        // Use Web Speech API to speak out text
-        function speak(text) {
-            window.speechSynthesis.cancel(); // Cancel any ongoing speech
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "zh-CN"; // Set language to Chinese
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // Initialize the recognizer and set up event listeners
-        (async function () {
-            await initializeRecognizer();
-            startBtn.addEventListener("click", startListening);
-            stopBtn.addEventListener("click", stopListening);
-        })();
-    </script>
+    
+    </div>
 </body>
 </html>
