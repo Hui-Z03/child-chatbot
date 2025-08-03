@@ -138,3 +138,5 @@ As development continues, the team envisions several key improvements to make **
 - Incorporate **usage monitoring**, **parental controls**, and **ethical guidelines** in line with best practices for AI use with children.
 
 These future enhancements aim to create a more personalized, supportive, and responsible learning experience—making Mandarin learning both fun and safe for young users.
+
+updated .env
